@@ -105,28 +105,39 @@ const DATA_URL = "https://gist.githubusercontent.com/arothajefin-lgtm/49987c77b5
         }
 
         // --- AUTO SYNC ---
+                // --- AUTO SYNC (ഇതാണ് പുതിയ കോഡ്) ---
         async function autoSync() {
             const statusDiv = document.getElementById('syncStatus');
             try {
-                const response = await fetch(DATA_URL);
+                // ഇവിടെയാണ് { cache: "no-store" } ചേർത്തത്
+                const response = await fetch(DATA_URL, { cache: "no-store" });
                 if (!response.ok) throw new Error();
                 const remoteData = await response.json();
                 
+                // ലൊക്കേഷനിലും വാക്സിലും മാറ്റമുണ്ടോ എന്ന് നോക്കുന്നു
                 const localLocStr = localStorage.getItem('j_loc_v7');
                 const remoteLocStr = JSON.stringify(remoteData.l);
                 
+                // പുതിയ ഡാറ്റ ഉണ്ടെങ്കിൽ മാത്രം സേവ് ചെയ്യുകയും പേജ് റിഫ്രഷ് ചെയ്യുകയും ചെയ്യുന്നു
                 if (remoteLocStr !== localLocStr) {
                     localStorage.setItem('j_loc_v7', remoteLocStr);
                     localStorage.setItem('j_wax_v7', JSON.stringify(remoteData.w));
                     statusDiv.innerText = "Data Updated!";
+                    
+                    // ചെറിയൊരു താമസം നൽകി പേജ് റീലോഡ് ചെയ്യുന്നു
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     statusDiv.innerText = "Data Up-to-date ✅";
+                    // ലിസ്റ്റ് കാണിക്കാൻ ഇത് സഹായിക്കും
+                    locDB = remoteData.l;
+                    waxDB = remoteData.w;
                 }
             } catch (e) {
                 statusDiv.innerText = "Offline Mode";
+                console.log("Sync Error:", e);
             }
         }
+
 
         // --- TAG LOGIC ---
         var qrTag = new QRCode(document.getElementById("qrcode-tag"), { width: 180, height: 180 });
