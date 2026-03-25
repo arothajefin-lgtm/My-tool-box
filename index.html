@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tool Box - Jeffin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .page { display: none; width: 100%; padding: 15px; }
+        .page.active { display: flex; flex-direction: column; align-items: center; }
+        .glass-card { background: white; padding: 25px; border-radius: 35px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; text-align: center; }
+        #qrcode-tag, #qrcode-loc { background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 24px; display: inline-block; margin: 15px 0; }
+        .btn-press:active { transform: scale(0.95); transition: 0.1s; }
+        .list-container { max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 15px; margin-top: 10px; }
+        .list-item { padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .list-item:hover { background: #eff6ff; }
+        .list-item.selected { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="homePage" class="page active">
+        <h1 class="text-3xl font-bold text-slate-800 mb-8">My Tool Box</h1>
+        <div id="syncStatus" class="text-xs text-blue-500 mb-2 font-bold">Checking for updates...</div>
+        <div class="grid grid-cols-1 gap-5 w-full max-sm px-4">
+            <div class="bg-blue-600 text-white p-8 rounded-3xl shadow-lg cursor-pointer text-center btn-press" onclick="showPage('tagPage')">
+                <div class="text-5xl mb-3">🏷️📍</div>
+                <h3 class="text-xl font-bold">Tag➔Location</h3>
+                <p class="text-sm opacity-80">start process</p>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 cursor-pointer text-center btn-press" onclick="showPage('waxPage')">
+                <div class="text-5xl mb-3">⚖️</div>
+                <h3 class="text-xl font-bold text-slate-700">Wax Weight</h3>
+            </div>
+        </div>
+    </div>
+
+    <div id="tagPage" class="page">
+        <div class="glass-card">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="showPage('homePage')" class="text-slate-400">✕</button>
+                <h2 class="text-xl font-bold text-slate-800">Step 1: QR Tag🏷️</h2>
+                <div class="w-8"></div>
+            </div>
+            <div class="bg-slate-100 rounded-2xl p-4 mb-4">
+                <input type="number" id="tagInp" value="0" oninput="drawTag()" class="text-3xl w-full bg-transparent font-bold outline-none text-blue-600 tracking-widest text-center">
+            </div>
+            <div id="qrcode-tag"></div>
+            <div id="tagTxt" class="text-xl font-bold text-orange-500 mb-6">0</div>
+            <button onclick="showPage('locPage')" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg btn-press shadow-lg">OK ➔ Select Location</button>
+            <div class="flex gap-4 mt-4">
+                <button onclick="changeTag(-1)" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold">PREV</button>
+                <button onclick="changeTag(1)" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold">NEXT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="locPage" class="page">
+        <div class="glass-card">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="showPage('tagPage')" class="text-blue-600 font-bold">← Edit Tag</button>
+                <h2 class="text-xl font-bold text-slate-800">Step 2: Location📍</h2>
+                <div class="w-10"></div>
+            </div>
+            <input type="text" id="locSearch" placeholder="Search Location..." oninput="filterLocs(this.value)" class="w-full p-4 border-2 border-blue-100 rounded-2xl mb-2 outline-none focus:border-blue-400 font-bold">
+            <div id="locList" class="list-container mb-4"></div>
+            <div id="locQRDisplay" class="hidden">
+                <div id="qrcode-loc"></div>
+                <div id="locValDisplay" class="text-lg font-bold text-slate-700 mb-4"></div>
+            </div>
+            <button onclick="finishProcess()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-lg btn-press shadow-lg">Done ➔ Back to Tag</button>
+        </div>
+    </div>
+
+    <div id="waxPage" class="page">
+        <div class="glass-card">
+            <button onclick="showPage('homePage')" class="block text-left text-blue-600 mb-4 font-bold">← Back</button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Wax Weight</h2>
+            <input type="text" id="waxInp" placeholder="Search Code..." oninput="waxSearch(this.value)" class="w-full p-4 border-2 border-slate-100 rounded-2xl outline-none uppercase font-bold">
+            <div id="waxSugg" class="hidden border rounded-2xl bg-white mt-2 max-h-40 overflow-auto"></div>
+            <div id="waxRes" class="hidden mt-8 p-8 bg-blue-50 rounded-[30px] text-center">
+                <div id="waxResC" class="text-slate-400 font-semibold uppercase"></div>
+                <div class="text-5xl font-bold text-blue-700 mt-2"><span id="waxResV">0</span> <span class="text-2xl">kg</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+const DATA_URL = "https://gist.githubusercontent.com/arothajefin-lgtm/49987c77b5f42d688ba07c9e82e846f9/raw/data.json?t=" + new Date().getTime();
+
+       let selectedLocValue = "";
+        let locDB = JSON.parse(localStorage.getItem('j_loc_v7')) || [];
+        let waxDB = JSON.parse(localStorage.getItem('j_wax_v7')) || {};
+
+        // --- NAVIGATION (ഇതാണ് വിട്ടുപോയത്) ---
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(id === 'locPage') renderLocList();
+        }
+
+        // --- AUTO SYNC ---
+        async function autoSync() {
+            const statusDiv = document.getElementById('syncStatus');
+            try {
+                const response = await fetch(DATA_URL);
+                if (!response.ok) throw new Error();
+                const remoteData = await response.json();
+                
+                const localLocStr = localStorage.getItem('j_loc_v7');
+                const remoteLocStr = JSON.stringify(remoteData.l);
+                
+                if (remoteLocStr !== localLocStr) {
+                    localStorage.setItem('j_loc_v7', remoteLocStr);
+                    localStorage.setItem('j_wax_v7', JSON.stringify(remoteData.w));
+                    statusDiv.innerText = "Data Updated!";
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    statusDiv.innerText = "Data Up-to-date ✅";
+                }
+            } catch (e) {
+                statusDiv.innerText = "Offline Mode";
+            }
+        }
+
+        // --- TAG LOGIC ---
+        var qrTag = new QRCode(document.getElementById("qrcode-tag"), { width: 180, height: 180 });
+        function drawTag() {
+            let v = document.getElementById("tagInp").value || "0";
+            qrTag.makeCode("|" + v); 
+            document.getElementById("tagTxt").innerText = v;
+        }
+        function changeTag(d) {
+            let i = document.getElementById("tagInp");
+            let n = (parseInt(i.value || 0) + d);
+            if(n >= 0) { i.value = n.toString().padStart(7, '0'); drawTag(); }
+        }
+
+        // --- LOCATION LOGIC ---
+        var qrLoc = new QRCode(document.getElementById("qrcode-loc"), { width: 180, height: 180 });
+        function renderLocList(filter = "") {
+            const container = document.getElementById('locList');
+            container.innerHTML = "";
+            const filtered = locDB.filter(item => item.n.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `list-item ${selectedLocValue === item.v ? 'selected' : ''}`;
+                div.innerText = item.n;
+                div.onclick = () => selectLoc(item);
+                container.appendChild(div);
+            });
+        }
+        function filterLocs(val) { renderLocList(val); }
+        function selectLoc(item) {
+            selectedLocValue = item.v;
+            document.getElementById('locQRDisplay').classList.remove('hidden');
+            document.getElementById('locValDisplay').innerText = "Selected: " + item.n;
+            qrLoc.makeCode(item.v);
+            renderLocList(document.getElementById('locSearch').value);
+        }
+        function finishProcess() {
+            if(!selectedLocValue) return alert("ദയവായി ഒരു ലൊക്കേഷൻ സെലക്ട് ചെയ്യുക!");
+            selectedLocValue = "";
+            document.getElementById('locQRDisplay').classList.add('hidden');
+            document.getElementById('locSearch').value = "";
+            showPage('tagPage');
+        }
+
+        // --- WAX LOGIC ---
+        function waxSearch(v) {
+            const sug = document.getElementById('waxSugg'), res = document.getElementById('waxRes');
+            v = v.toUpperCase().trim(); sug.innerHTML = '';
+            if(!v) { sug.classList.add('hidden'); res.classList.add('hidden'); return; }
+            const matches = Object.keys(waxDB).filter(k => k.includes(v));
+            if(matches.length) {
+                sug.classList.remove('hidden');
+                matches.forEach(m => {
+                    let d = document.createElement('div'); d.className = 'p-3 border-b cursor-pointer font-bold'; d.innerText = m;
+                    d.onclick = () => { 
+                        document.getElementById('waxInp').value = m; 
+                        sug.classList.add('hidden'); 
+                        document.getElementById('waxResC').innerText = m; 
+                        document.getElementById('waxResV').innerText = waxDB[m]; 
+                        res.classList.remove('hidden'); 
+                    };
+                    sug.appendChild(d);
+                });
+            } else sug.classList.add('hidden');
+        }
+
+        window.onload = () => {
+            autoSync();
+            drawTag();
+        };
+    </script>
+</body>
+</html>
