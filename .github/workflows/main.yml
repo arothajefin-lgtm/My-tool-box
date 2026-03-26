@@ -30,7 +30,7 @@ jobs:
       - name: Create Cordova Project
         run: |
           # "My App Name" എന്ന ഭാഗത്ത് നിങ്ങളുടെ ആപ്പിന്റെ പേര് നൽകുക
-          cordova create myApp com.arothajefin.myapp "My Attendance"
+          cordova create myApp com.arothajefin.myapp "My toolbox "
           cp -r * myApp/www/ || true
           cd myApp
           # ഐക്കൺ ഫയൽ ഉണ്ടെങ്കിൽ അത് സെറ്റ് ചെയ്യാൻ
