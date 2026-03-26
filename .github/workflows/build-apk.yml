@@ -34,12 +34,12 @@ jobs:
 
       - name: Generate App Icons
         run: |
-          if [ -f "icon.png" ]; then
-            # ഇവിടെയാണ് മാറ്റം വരുത്തിയത്
-            npx capacitor-assets generate --android --icon icon.png
-          else
-            echo "icon.png not found"
-          fi
+          # ഒരു 'assets' ഫോൾഡർ ഉണ്ടാക്കി അതിലേക്ക് icon.png മാറ്റുന്നു
+          mkdir -p assets
+          cp icon.png assets/icon-only.png 2>/dev/null || true
+          cp icon.png assets/icon.png 2>/dev/null || true
+          # കമാൻഡ് ലളിതമാക്കുന്നു
+          npx capacitor-assets generate --android
 
       - name: Build APK
         run: |
