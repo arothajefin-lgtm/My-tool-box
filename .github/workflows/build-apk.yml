@@ -1,16 +1,18 @@
-name: Build Android APK with Icon
+name: Build Android APK
 on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Node.js 24 വാണിംഗ് ഒഴിവാക്കാൻ
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -18,24 +20,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install Dependencies & Setup Capacitor
+      - name: Install Dependencies
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          # ആപ്പിന്റെ പേരും പാക്കേജ് ഐഡിയും ഇവിടെ നൽകുക
+          # നിങ്ങളുടെ ആപ്പിന്റെ പേരും ഐഡിയും താഴെ നൽകാം
           npx cap init "My Tool Box" com.arothajefin.myapp --web-dir . 
           npx cap add android
 
       - name: Generate App Icons
         run: |
-          # മെയിൻ ഫോൾഡറിലെ icon.png ഉപയോഗിച്ച് ആൻഡ്രോയിഡ് ഐക്കണുകൾ നിർമ്മിക്കുന്നു
-          npx capacitor-assets generate --android --icon-path icon.png
-
-      - name: Copy Web Code to Android
-        run: npx cap copy android
+          # icon.png ഉണ്ടോ എന്ന് പരിശോധിച്ച ശേഷം മാത്രം ജനറേറ്റ് ചെയ്യുന്നു
+          if [ -f "icon.png" ]; then
+            npx capacitor-assets generate --android --icon-path icon.png
+          else
+            echo "icon.png not found, skipping icon generation"
+          fi
 
       - name: Build APK
         run: |
+          npx cap copy android
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -43,6 +47,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: my-app-with-icon
+          name: my-app-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
