@@ -1,0 +1,52 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Create Cordova Project
+        run: |
+          # "My App Name" എന്ന ഭാഗത്ത് നിങ്ങളുടെ ആപ്പിന്റെ പേര് നൽകുക
+          cordova create myApp com.arothajefin.myapp "My Attendance"
+          cp -r * myApp/www/ || true
+          cd myApp
+          # ഐക്കൺ ഫയൽ ഉണ്ടെങ്കിൽ അത് സെറ്റ് ചെയ്യാൻ
+          mkdir -p res
+          cp ../icon.png res/icon.png || true
+          # config.xml ഫയലിൽ ഐക്കൺ പാത്ത് ചേർക്കുന്നു
+          sed -i '/<\/widget>/i \    <icon src="res/icon.png" />' config.xml
+          cordova platform add android
+
+      - name: Build Android APK
+        run: |
+          cd myApp
+          cordova build android
+
+      - name: Find and Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app-apk
+          path: "**/platforms/android/app/build/outputs/apk/debug/*.apk"
