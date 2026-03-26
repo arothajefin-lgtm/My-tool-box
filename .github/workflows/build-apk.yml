@@ -22,22 +22,21 @@ jobs:
 
       - name: Prepare Web Directory
         run: |
-          # ഒരു www ഫോൾഡർ ഉണ്ടാക്കി എല്ലാ HTML/JS/PNG ഫയലുകളും അതിലേക്ക് മാറ്റുന്നു
-          mkdir www
+          mkdir -p www
           cp -r *.html *.js *.css *.png www/ 2>/dev/null || true
 
       - name: Install Dependencies
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          # web-dir ആയി 'www' നൽകുന്നു
           npx cap init "My Tool Box" com.arothajefin.myapp --web-dir www
           npx cap add android
 
       - name: Generate App Icons
         run: |
           if [ -f "icon.png" ]; then
-            npx capacitor-assets generate --android --icon-path icon.png
+            # ഇവിടെയാണ് മാറ്റം വരുത്തിയത്
+            npx capacitor-assets generate --android --icon icon.png
           else
             echo "icon.png not found"
           fi
