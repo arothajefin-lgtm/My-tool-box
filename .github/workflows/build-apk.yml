@@ -5,7 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Node.js 24 വാണിംഗ് ഒഴിവാക്കാൻ
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
@@ -20,21 +20,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Prepare Web Directory
+        run: |
+          # ഒരു www ഫോൾഡർ ഉണ്ടാക്കി എല്ലാ HTML/JS/PNG ഫയലുകളും അതിലേക്ക് മാറ്റുന്നു
+          mkdir www
+          cp -r *.html *.js *.css *.png www/ 2>/dev/null || true
+
       - name: Install Dependencies
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          # നിങ്ങളുടെ ആപ്പിന്റെ പേരും ഐഡിയും താഴെ നൽകാം
-          npx cap init "My Tool Box" com.arothajefin.myapp --web-dir . 
+          # web-dir ആയി 'www' നൽകുന്നു
+          npx cap init "My Tool Box" com.arothajefin.myapp --web-dir www
           npx cap add android
 
       - name: Generate App Icons
         run: |
-          # icon.png ഉണ്ടോ എന്ന് പരിശോധിച്ച ശേഷം മാത്രം ജനറേറ്റ് ചെയ്യുന്നു
           if [ -f "icon.png" ]; then
             npx capacitor-assets generate --android --icon-path icon.png
           else
-            echo "icon.png not found, skipping icon generation"
+            echo "icon.png not found"
           fi
 
       - name: Build APK
@@ -49,4 +54,3 @@ jobs:
         with:
           name: my-app-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
