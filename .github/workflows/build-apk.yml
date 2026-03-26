@@ -17,7 +17,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21' # ഇവിടെ 17 എന്നത് മാറ്റി 21 ആക്കി
           distribution: 'temurin'
 
       - name: Prepare Web Directory
@@ -34,17 +34,16 @@ jobs:
 
       - name: Generate App Icons
         run: |
-          # ഒരു 'assets' ഫോൾഡർ ഉണ്ടാക്കി അതിലേക്ക് icon.png മാറ്റുന്നു
           mkdir -p assets
           cp icon.png assets/icon-only.png 2>/dev/null || true
           cp icon.png assets/icon.png 2>/dev/null || true
-          # കമാൻഡ് ലളിതമാക്കുന്നു
           npx capacitor-assets generate --android
 
       - name: Build APK
         run: |
           npx cap copy android
           cd android
+          # Capacitor 7/Gradle 8 പ്രകാരം Java 21 ആവശ്യമാണ്
           chmod +x gradlew
           ./gradlew assembleDebug
 
