@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK with Icon
 
 on:
   push:
@@ -29,15 +29,18 @@ jobs:
 
       - name: Create Cordova Project
         run: |
-          # "My App Name" എന്ന ഭാഗത്ത് നിങ്ങളുടെ ആപ്പിന്റെ പേര് നൽകുക
-          cordova create myApp com.arothajefin.myapp "My toolbox "
+          # ഇവിടെ ആപ്പിന്റെ പേര് മാറ്റാം (ഉദാഹരണത്തിന് "My App")
+          cordova create myApp com.arothajefin.project2 "My App Name"
           cp -r * myApp/www/ || true
           cd myApp
-          # ഐക്കൺ ഫയൽ ഉണ്ടെങ്കിൽ അത് സെറ്റ് ചെയ്യാൻ
+          
+          # ഐക്കൺ സെറ്റ് ചെയ്യാനുള്ള ഭാഗം
           mkdir -p res
           cp ../icon.png res/icon.png || true
-          # config.xml ഫയലിൽ ഐക്കൺ പാത്ത് ചേർക്കുന്നു
+          
+          # config.xml-ൽ ഐക്കൺ വിവരം ചേർക്കുന്നു
           sed -i '/<\/widget>/i \    <icon src="res/icon.png" />' config.xml
+          
           cordova platform add android
 
       - name: Build Android APK
@@ -48,5 +51,5 @@ jobs:
       - name: Find and Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: my-toolbox-apk
+          name: project-with-icon-apk
           path: "**/platforms/android/app/build/outputs/apk/debug/*.apk"
