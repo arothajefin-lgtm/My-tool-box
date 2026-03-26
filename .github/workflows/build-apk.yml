@@ -17,7 +17,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21' # ഇവിടെ 17 എന്നത് മാറ്റി 21 ആക്കി
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Prepare Web Directory
@@ -29,7 +29,8 @@ jobs:
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
-          npx cap init "My Tool Box" com.arothajefin.toolbox--web-dir www
+          # താഴെയുള്ള വരി ശ്രദ്ധിക്കുക, സ്പേസ് കൃത്യമാണ്
+          npx cap init "My Tool Box" com.arothajefin.toolbox --web-dir www
           npx cap add android
 
       - name: Generate App Icons
@@ -43,7 +44,6 @@ jobs:
         run: |
           npx cap copy android
           cd android
-          # Capacitor 7/Gradle 8 പ്രകാരം Java 21 ആവശ്യമാണ്
           chmod +x gradlew
           ./gradlew assembleDebug
 
