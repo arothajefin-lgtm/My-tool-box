@@ -1,31 +1,38 @@
-name: Build Android APK
+name: Build Android APK with Icon
 on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Install Dependencies
-        run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "My Tool Box" com.arothajefin.myapp --web-dir .
-
-      - name: Add Android Platform
-        run: npx cap add android
+          node-version: 20
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Install Dependencies & Setup Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
+          # ആപ്പിന്റെ പേരും പാക്കേജ് ഐഡിയും ഇവിടെ നൽകുക
+          npx cap init "My Tool Box" com.arothajefin.myapp --web-dir . 
+          npx cap add android
+
+      - name: Generate App Icons
+        run: |
+          # മെയിൻ ഫോൾഡറിലെ icon.png ഉപയോഗിച്ച് ആൻഡ്രോയിഡ് ഐക്കണുകൾ നിർമ്മിക്കുന്നു
+          npx capacitor-assets generate --android --icon-path icon.png
+
+      - name: Copy Web Code to Android
+        run: npx cap copy android
 
       - name: Build APK
         run: |
@@ -34,8 +41,8 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: my-app-with-icon
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
