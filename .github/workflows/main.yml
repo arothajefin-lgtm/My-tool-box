@@ -30,7 +30,7 @@ jobs:
       - name: Create Cordova Project
         run: |
           # ഇവിടെ ആപ്പിന്റെ പേര് മാറ്റാം (ഉദാഹരണത്തിന് "My App")
-          cordova create myApp com.arothajefin.project2 "My App Name"
+          cordova create myApp com.arothajefin.my toolbox"My toolbox"
           cp -r * myApp/www/ || true
           cd myApp
           
